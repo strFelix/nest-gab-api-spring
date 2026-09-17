@@ -2,17 +2,19 @@ package br.com.gabnest.nest_gab_api.model;
 
 import br.com.gabnest.nest_gab_api.model.enums.ProjectStage;
 import br.com.gabnest.nest_gab_api.model.enums.ProjectStatus;
-import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.mongodb.core.mapping.Field;
+import org.springframework.data.mongodb.core.mapping.FieldType;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "TB_PROJECT")
+@Document(collection = "projects")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -21,55 +23,41 @@ import java.time.LocalDateTime;
 public class Project {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_project")
-    @SequenceGenerator(name = "seq_project", sequenceName = "SEQ_PROJECT", allocationSize = 1)
-    private Long id;
+    private String id;
 
-    @Column(name = "TITLE", nullable = false, length = 150)
     private String title;
 
-    @Column(name = "DESCRIPTION", nullable = false, length = 4000)
     private String description;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "STATUS", nullable = false, length = 20)
+    @Field(targetType = FieldType.STRING)
     private ProjectStatus status = ProjectStatus.PLANNING;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "STAGE", nullable = false, length = 20)
+    @Field(targetType = FieldType.STRING)
     private ProjectStage stage = ProjectStage.IDEATION;
 
-    @Column(name = "INVESTMENT", nullable = false, precision = 15, scale = 2)
     private BigDecimal investment;
 
-    @Column(name = "EXPECTED_RETURN", nullable = false, precision = 15, scale = 2)
     private BigDecimal expectedReturn;
 
-    @Column(name = "ACTUAL_RETURN", precision = 15, scale = 2)
     private BigDecimal actualReturn;
 
-    @Column(name = "PRODUCTIVITY_GAIN", precision = 5, scale = 2)
     private BigDecimal productivityGain;
 
-    @Column(name = "START_DATE", nullable = false)
     private LocalDate startDate;
 
-    @Column(name = "END_DATE")
     private LocalDate endDate;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "CREATED_BY", nullable = false)
-    private User createdBy;
+    // Reference ids
+    private String createdById;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "IDEA_ID")
-    private Idea idea;
+    private String ideaId;
 
-    @CreationTimestamp
-    @Column(name = "CREATED_AT", nullable = false, updatable = false)
+    // Link to guideline in effect (nullable)
+    private String guidelineId;
+
+    @CreatedDate
     private LocalDateTime createdAt;
 
-    @UpdateTimestamp
-    @Column(name = "UPDATED_AT", nullable = false)
+    @LastModifiedDate
     private LocalDateTime updatedAt;
 }

@@ -24,7 +24,7 @@ public class IdeaService {
     private final IdeaRepository ideaRepository;
     private final UserRepository userRepository;
 
-    public IdeaResponse create(IdeaRequest request, Long userId) {
+    public IdeaResponse create(IdeaRequest request, String userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
@@ -32,7 +32,7 @@ public class IdeaService {
                 .title(request.getTitle())
                 .description(request.getDescription())
                 .status(IdeaStatus.PENDING)
-                .submittedBy(user)
+                .submittedById(user.getId())
                 .build();
 
         return toResponse(ideaRepository.save(idea));
@@ -52,18 +52,18 @@ public class IdeaService {
                 .toList();
     }
 
-    public List<IdeaResponse> findMyIdeas(Long userId) {
+    public List<IdeaResponse> findMyIdeas(String userId) {
         return ideaRepository.findBySubmittedById(userId)
                 .stream()
                 .map(this::toResponse)
                 .toList();
     }
 
-    public IdeaResponse findById(Long id) {
+    public IdeaResponse findById(String id) {
         return toResponse(findOrThrow(id));
     }
 
-    public IdeaResponse review(Long id, IdeaReviewRequest request, Long reviewerId) {
+    public IdeaResponse review(String id, IdeaReviewRequest request, String reviewerId) {
         Idea idea = findOrThrow(id);
 
         User reviewer = userRepository.findById(reviewerId)
@@ -71,13 +71,13 @@ public class IdeaService {
 
         idea.setStatus(request.getStatus());
         idea.setPriority(request.getPriority());
-        idea.setReviewedBy(reviewer);
+        idea.setReviewedById(reviewer.getId());
         idea.setReviewedAt(LocalDateTime.now());
 
         return toResponse(ideaRepository.save(idea));
     }
 
-    private Idea findOrThrow(Long id) {
+    private Idea findOrThrow(String id) {
         return ideaRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Idea not found"));
     }
@@ -98,8 +98,8 @@ public class IdeaService {
                 .description(idea.getDescription())
                 .status(idea.getStatus())
                 .priority(idea.getPriority())
-                .submittedBy(toUserSummary(idea.getSubmittedBy()))
-                .reviewedBy(toUserSummary(idea.getReviewedBy()))
+                .submittedBy(userRepository.findById(idea.getSubmittedById()).map(this::toUserSummary).orElse(null))
+                .reviewedBy(userRepository.findById(idea.getReviewedById()).map(this::toUserSummary).orElse(null))
                 .reviewedAt(idea.getReviewedAt())
                 .createdAt(idea.getCreatedAt())
                 .updatedAt(idea.getUpdatedAt())

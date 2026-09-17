@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @Data
 @Builder
 public class IdeaResponse {
-    private Long id;
+    private String id;
     private String title;
     private String description;
     private IdeaStatus status;

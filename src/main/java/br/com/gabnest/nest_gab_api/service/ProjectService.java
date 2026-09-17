@@ -27,13 +27,14 @@ public class ProjectService {
     private final IdeaRepository ideaRepository;
     private final IdeaService ideaService;
 
-    public ProjectResponse create(ProjectRequest request, Long userId) {
+    public ProjectResponse create(ProjectRequest request, String userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
-        Idea idea = null;
-        if (request.getIdeaId() != null) {
-            idea = ideaRepository.findById(request.getIdeaId())
+        String ideaId = request.getIdeaId();
+        if (ideaId != null) {
+            // ensure idea exists
+            ideaRepository.findById(ideaId)
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Idea not found"));
         }
 
@@ -48,8 +49,8 @@ public class ProjectService {
                 .productivityGain(request.getProductivityGain())
                 .startDate(request.getStartDate())
                 .endDate(request.getEndDate())
-                .createdBy(user)
-                .idea(idea)
+                .createdById(user.getId())
+                .ideaId(ideaId)
                 .build();
 
         return toResponse(projectRepository.save(project));
@@ -62,11 +63,11 @@ public class ProjectService {
                 .toList();
     }
 
-    public ProjectResponse findById(Long id) {
+    public ProjectResponse findById(String id) {
         return toResponse(findOrThrow(id));
     }
 
-    public ProjectResponse update(Long id, ProjectRequest request) {
+    public ProjectResponse update(String id, ProjectRequest request) {
         Project project = findOrThrow(id);
 
         project.setTitle(request.getTitle());
@@ -83,7 +84,7 @@ public class ProjectService {
         return toResponse(projectRepository.save(project));
     }
 
-    private Project findOrThrow(Long id) {
+    private Project findOrThrow(String id) {
         return projectRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Project not found"));
     }
@@ -125,8 +126,8 @@ public class ProjectService {
                 .productivityGain(p.getProductivityGain())
                 .startDate(p.getStartDate())
                 .endDate(p.getEndDate())
-                .createdBy(toUserSummary(p.getCreatedBy()))
-                .idea(p.getIdea() != null ? ideaService.findById(p.getIdea().getId()) : null)
+                .createdBy(userRepository.findById(p.getCreatedById()).map(this::toUserSummary).orElse(null))
+                .idea(p.getIdeaId() != null ? ideaService.findById(p.getIdeaId()) : null)
                 .createdAt(p.getCreatedAt())
                 .updatedAt(p.getUpdatedAt())
                 .build();

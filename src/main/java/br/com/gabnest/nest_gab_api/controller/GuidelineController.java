@@ -29,7 +29,7 @@ public class GuidelineController {
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('OPERATOR', 'MANAGER', 'LEADER')")
-    public ResponseEntity<GuidelineResponse> findById(@PathVariable Long id) {
+    public ResponseEntity<GuidelineResponse> findById(@PathVariable String id) {
         return ResponseEntity.ok(guidelineService.findById(id));
     }
 
@@ -38,21 +38,21 @@ public class GuidelineController {
     public ResponseEntity<GuidelineResponse> create(
             @RequestBody @Valid GuidelineRequest request,
             @RequestHeader("Authorization") String authHeader) {
-        Long userId = jwtService.extractUserId(authHeader.substring(7));
+        String userId = jwtService.extractUserId(authHeader.substring(7));
         return ResponseEntity.status(HttpStatus.CREATED).body(guidelineService.create(request, userId));
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('LEADER')")
     public ResponseEntity<GuidelineResponse> update(
-            @PathVariable Long id,
+            @PathVariable String id,
             @RequestBody @Valid GuidelineRequest request) {
         return ResponseEntity.ok(guidelineService.update(id, request));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('LEADER')")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
+    public ResponseEntity<Void> delete(@PathVariable String id) {
         guidelineService.delete(id);
         return ResponseEntity.noContent().build();
     }

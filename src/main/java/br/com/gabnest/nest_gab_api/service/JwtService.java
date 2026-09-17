@@ -28,7 +28,7 @@ public class JwtService {
         return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 
-    public String generateToken(Long userId, String email, UserRole role) {
+    public String generateToken(String userId, String email, UserRole role) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", userId);
         claims.put("role", role.name());
@@ -51,8 +51,8 @@ public class JwtService {
         return UserRole.valueOf(role);
     }
 
-    public Long extractUserId(String token) {
-        return extractClaim(token, claims -> claims.get("userId", Long.class));
+    public String extractUserId(String token) {
+        return extractClaim(token, claims -> claims.get("userId", String.class));
     }
 
     public boolean isTokenValid(String token, UserDetails userDetails) {

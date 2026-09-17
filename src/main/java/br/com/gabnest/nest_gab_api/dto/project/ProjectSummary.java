@@ -11,7 +11,7 @@ import java.time.LocalDate;
 @Data
 @Builder
 public class ProjectSummary {
-    private Long id;
+    private String id;
     private String title;
     private ProjectStatus status;
     private ProjectStage stage;

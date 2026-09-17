@@ -28,7 +28,7 @@ public class IdeaController {
     public ResponseEntity<IdeaResponse> create(
             @RequestBody @Valid IdeaRequest request,
             @RequestHeader("Authorization") String authHeader) {
-        Long userId = jwtService.extractUserId(authHeader.substring(7));
+        String userId = jwtService.extractUserId(authHeader.substring(7));
         return ResponseEntity.status(HttpStatus.CREATED).body(ideaService.create(request, userId));
     }
 
@@ -46,23 +46,23 @@ public class IdeaController {
     @PreAuthorize("hasRole('OPERATOR')")
     public ResponseEntity<List<IdeaResponse>> findMyIdeas(
             @RequestHeader("Authorization") String authHeader) {
-        Long userId = jwtService.extractUserId(authHeader.substring(7));
+        String userId = jwtService.extractUserId(authHeader.substring(7));
         return ResponseEntity.ok(ideaService.findMyIdeas(userId));
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('OPERATOR', 'MANAGER')")
-    public ResponseEntity<IdeaResponse> findById(@PathVariable Long id) {
+    public ResponseEntity<IdeaResponse> findById(@PathVariable String id) {
         return ResponseEntity.ok(ideaService.findById(id));
     }
 
     @PatchMapping("/{id}/review")
     @PreAuthorize("hasRole('MANAGER')")
     public ResponseEntity<IdeaResponse> review(
-            @PathVariable Long id,
+            @PathVariable String id,
             @RequestBody @Valid IdeaReviewRequest request,
             @RequestHeader("Authorization") String authHeader) {
-        Long reviewerId = jwtService.extractUserId(authHeader.substring(7));
+        String reviewerId = jwtService.extractUserId(authHeader.substring(7));
         return ResponseEntity.ok(ideaService.review(id, request, reviewerId));
     }
 }
