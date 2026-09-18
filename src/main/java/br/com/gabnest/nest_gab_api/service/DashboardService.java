@@ -1,13 +1,20 @@
 package br.com.gabnest.nest_gab_api.service;
 
 import br.com.gabnest.nest_gab_api.dto.project.ProjectSummary;
-import br.com.gabnest.nest_gab_api.model.enums.ProjectStatus;
-import br.com.gabnest.nest_gab_api.repository.IdeaRepository;
-import br.com.gabnest.nest_gab_api.repository.ProjectRepository;
+import br.com.gabnest.nest_gab_api.model.Idea;
+import br.com.gabnest.nest_gab_api.model.Project;
 import br.com.gabnest.nest_gab_api.model.enums.IdeaStatus;
+import br.com.gabnest.nest_gab_api.model.enums.ProjectStatus;
+import br.com.gabnest.nest_gab_api.repository.ProjectRepository;
 import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.aggregation.Aggregation;
+import org.springframework.data.mongodb.core.aggregation.AggregationResults;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -19,20 +26,13 @@ import java.util.List;
 public class DashboardService {
 
     private final ProjectRepository projectRepository;
-    private final IdeaRepository ideaRepository;
-    private final ProjectService projectService;
+    private final MongoTemplate mongoTemplate;
 
     public DashboardResponse getDashboard() {
-        var projects = projectRepository.findAll();
-        var completedProjects = projectRepository.findByStatus(ProjectStatus.COMPLETED);
+        var metrics = loadCompletedProjectMetrics();
 
-        BigDecimal totalInvestmentCompleted = completedProjects.stream()
-                .map(p -> p.getInvestment() != null ? p.getInvestment() : BigDecimal.ZERO)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        BigDecimal totalActualReturn = completedProjects.stream()
-                .map(p -> p.getActualReturn() != null ? p.getActualReturn() : BigDecimal.ZERO)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal totalInvestmentCompleted = defaultDecimal(metrics.getTotalInvestment());
+        BigDecimal totalActualReturn = defaultDecimal(metrics.getTotalActualReturn());
 
         BigDecimal roi = BigDecimal.ZERO;
         if (totalInvestmentCompleted.compareTo(BigDecimal.ZERO) > 0) {
@@ -43,31 +43,71 @@ public class DashboardService {
 
         BigDecimal savings = totalActualReturn.subtract(totalInvestmentCompleted);
 
-        long ideasImplemented = ideaRepository.findByStatus(IdeaStatus.APPROVED).size();
+        long ideasImplemented = mongoTemplate.count(
+                Query.query(Criteria.where("status").is(IdeaStatus.APPROVED.name())),
+                Idea.class
+        );
 
-        List<ProjectSummary> summaries = projects.stream()
-                .map(p -> projectService.findById(p.getId()))
-                .map(r -> ProjectSummary.builder()
-                        .id(r.getId())
-                        .title(r.getTitle())
-                        .status(r.getStatus())
-                        .stage(r.getStage())
-                        .investment(r.getInvestment())
-                        .expectedReturn(r.getExpectedReturn())
-                        .actualReturn(r.getActualReturn())
-                        .productivityGain(r.getProductivityGain())
-                        .startDate(r.getStartDate())
-                        .endDate(r.getEndDate())
-                        .build())
+        List<ProjectSummary> summaries = projectRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt")).stream()
+                .map(this::toProjectSummary)
                 .toList();
 
         return DashboardResponse.builder()
                 .totalRoi(roi)
                 .totalSavings(savings.max(BigDecimal.ZERO))
-                .completedProjects((long) completedProjects.size())
+                .completedProjects(defaultLong(metrics.getCompletedProjects()))
                 .ideasImplemented(ideasImplemented)
                 .projects(summaries)
                 .build();
+    }
+
+    private DashboardMetrics loadCompletedProjectMetrics() {
+        Aggregation aggregation = Aggregation.newAggregation(
+                Aggregation.match(Criteria.where("status").is(ProjectStatus.COMPLETED.name())),
+                Aggregation.group()
+                        .count().as("completedProjects")
+                        .sum("investment").as("totalInvestment")
+                        .sum("actualReturn").as("totalActualReturn")
+        );
+
+        AggregationResults<DashboardMetrics> results = mongoTemplate.aggregate(aggregation, Project.class, DashboardMetrics.class);
+        DashboardMetrics metrics = results.getUniqueMappedResult();
+
+        return metrics != null ? metrics : DashboardMetrics.builder().build();
+    }
+
+    private ProjectSummary toProjectSummary(Project project) {
+        return ProjectSummary.builder()
+                .id(project.getId())
+                .title(project.getTitle())
+                .status(project.getStatus())
+                .stage(project.getStage())
+                .investment(project.getInvestment())
+                .expectedReturn(project.getExpectedReturn())
+                .actualReturn(project.getActualReturn())
+                .productivityGain(project.getProductivityGain())
+                .startDate(project.getStartDate())
+                .endDate(project.getEndDate())
+                .build();
+    }
+
+    private BigDecimal defaultDecimal(BigDecimal value) {
+        return value != null ? value : BigDecimal.ZERO;
+    }
+
+    private Long defaultLong(Long value) {
+        return value != null ? value : 0L;
+    }
+
+    @Data
+    @Builder
+    private static class DashboardMetrics {
+        @Builder.Default
+        private Long completedProjects = 0L;
+        @Builder.Default
+        private BigDecimal totalInvestment = BigDecimal.ZERO;
+        @Builder.Default
+        private BigDecimal totalActualReturn = BigDecimal.ZERO;
     }
 
     @Data

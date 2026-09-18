@@ -49,5 +49,5 @@ public class ProjectRequest {
 
     private LocalDate endDate;
 
-    private Long ideaId;
+    private String ideaId;
 }

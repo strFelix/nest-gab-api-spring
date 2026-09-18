@@ -1,14 +1,16 @@
 services:
-  oracle-db:
-    image: container-registry.oracle.com/database/free:latest
-    container_name: nest-oracle
+  mongo-db:
+    image: mongo:7
+    container_name: nest-mongo
     environment:
-      - ORACLE_PWD=nest123
+      # Root user for the Mongo instance; values should be set via env or CI secrets in production
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME:-nestadmin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD:-nest123}
+      MONGO_INITDB_DATABASE: ${MONGO_INITDB_DATABASE:-nest}
     ports:
-      - "1521:1521"
+      - "27017:27017"
     volumes:
-      - oracle-data:/opt/oracle/oradata
-      - ./docker/oracle/init:/opt/oracle/scripts/startup
+      - mongo-data:/data/db
 
 volumes:
-  oracle-data:
+  mongo-data:

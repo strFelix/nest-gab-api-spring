@@ -1,15 +1,17 @@
 package br.com.gabnest.nest_gab_api.model;
 
 import br.com.gabnest.nest_gab_api.model.enums.IdeaStatus;
-import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.mongodb.core.mapping.Field;
+import org.springframework.data.mongodb.core.mapping.FieldType;
 
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "TB_IDEA")
+@Document(collection = "ideas")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -18,39 +20,30 @@ import java.time.LocalDateTime;
 public class Idea {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_idea")
-    @SequenceGenerator(name = "seq_idea", sequenceName = "SEQ_IDEA", allocationSize = 1)
-    private Long id;
+    private String id;
 
-    @Column(name = "TITLE", nullable = false, length = 150)
     private String title;
 
-    @Column(name = "DESCRIPTION", nullable = false, length = 4000)
     private String description;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "STATUS", nullable = false, length = 20)
+    @Field(targetType = FieldType.STRING)
     private IdeaStatus status = IdeaStatus.PENDING;
 
-    @Column(name = "PRIORITY")
     private Integer priority;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "SUBMITTED_BY", nullable = false)
-    private User submittedBy;
+    // References by id to avoid DBRefs and N+1; resolve user data in services when needed
+    private String submittedById;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "REVIEWED_BY")
-    private User reviewedBy;
+    private String reviewedById;
 
-    @Column(name = "REVIEWED_AT")
     private LocalDateTime reviewedAt;
 
-    @CreationTimestamp
-    @Column(name = "CREATED_AT", nullable = false, updatable = false)
+    // Link to strategic guideline (nullable)
+    private String guidelineId;
+
+    @CreatedDate
     private LocalDateTime createdAt;
 
-    @UpdateTimestamp
-    @Column(name = "UPDATED_AT", nullable = false)
+    @LastModifiedDate
     private LocalDateTime updatedAt;
 }

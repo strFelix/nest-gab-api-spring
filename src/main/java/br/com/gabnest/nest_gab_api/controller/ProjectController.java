@@ -27,7 +27,7 @@ public class ProjectController {
     public ResponseEntity<ProjectResponse> create(
             @RequestBody @Valid ProjectRequest request,
             @RequestHeader("Authorization") String authHeader) {
-        Long userId = jwtService.extractUserId(authHeader.substring(7));
+        String userId = jwtService.extractUserId(authHeader.substring(7));
         return ResponseEntity.status(HttpStatus.CREATED).body(projectService.create(request, userId));
     }
 
@@ -39,14 +39,14 @@ public class ProjectController {
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('MANAGER', 'LEADER')")
-    public ResponseEntity<ProjectResponse> findById(@PathVariable Long id) {
+    public ResponseEntity<ProjectResponse> findById(@PathVariable String id) {
         return ResponseEntity.ok(projectService.findById(id));
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('MANAGER')")
     public ResponseEntity<ProjectResponse> update(
-            @PathVariable Long id,
+            @PathVariable String id,
             @RequestBody @Valid ProjectRequest request) {
         return ResponseEntity.ok(projectService.update(id, request));
     }

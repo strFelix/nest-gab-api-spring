@@ -28,37 +28,37 @@ public class GuidelineService {
                 .toList();
     }
 
-    public GuidelineResponse findById(Long id) {
+    public GuidelineResponse findById(String id) {
         return toResponse(findOrThrow(id));
     }
 
-    public GuidelineResponse create(GuidelineRequest request, Long userId) {
+    public GuidelineResponse create(GuidelineRequest request, String userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
         StrategicGuideline guideline = StrategicGuideline.builder()
                 .title(request.getTitle())
                 .content(request.getContent())
-                .createdBy(user)
+                .createdById(user.getId())
                 .build();
 
         return toResponse(guidelineRepository.save(guideline));
     }
 
-    public GuidelineResponse update(Long id, GuidelineRequest request) {
+    public GuidelineResponse update(String id, GuidelineRequest request) {
         StrategicGuideline guideline = findOrThrow(id);
         guideline.setTitle(request.getTitle());
         guideline.setContent(request.getContent());
         return toResponse(guidelineRepository.save(guideline));
     }
 
-    public void delete(Long id) {
+    public void delete(String id) {
         StrategicGuideline guideline = findOrThrow(id);
         guideline.setActive(false);
         guidelineRepository.save(guideline);
     }
 
-    private StrategicGuideline findOrThrow(Long id) {
+    private StrategicGuideline findOrThrow(String id) {
         return guidelineRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Guideline not found"));
     }
@@ -69,13 +69,20 @@ public class GuidelineService {
                 .title(g.getTitle())
                 .content(g.getContent())
                 .active(g.getActive())
-                .createdBy(UserSummary.builder()
-                        .id(g.getCreatedBy().getId())
-                        .name(g.getCreatedBy().getName())
-                        .role(g.getCreatedBy().getRole())
-                        .build())
+                .createdBy(userToSummary(g.getCreatedById()))
                 .createdAt(g.getCreatedAt())
                 .updatedAt(g.getUpdatedAt())
+                .build();
+    }
+
+    private UserSummary userToSummary(String userId) {
+        if (userId == null) return null;
+        User user = userRepository.findById(userId).orElse(null);
+        if (user == null) return null;
+        return UserSummary.builder()
+                .id(user.getId())
+                .name(user.getName())
+                .role(user.getRole())
                 .build();
     }
 }
