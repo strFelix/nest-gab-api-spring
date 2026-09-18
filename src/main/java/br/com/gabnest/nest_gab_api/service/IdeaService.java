@@ -92,14 +92,30 @@ public class IdeaService {
     }
 
     private IdeaResponse toResponse(Idea idea) {
+
+        UserSummary submittedBy = null;
+        UserSummary reviewedBy = null;
+
+        if (idea.getSubmittedById() != null) {
+            submittedBy = userRepository.findById(idea.getSubmittedById())
+                    .map(this::toUserSummary)
+                    .orElse(null);
+        }
+
+        if (idea.getReviewedById() != null) {
+            reviewedBy = userRepository.findById(idea.getReviewedById())
+                    .map(this::toUserSummary)
+                    .orElse(null);
+        }
+
         return IdeaResponse.builder()
                 .id(idea.getId())
                 .title(idea.getTitle())
                 .description(idea.getDescription())
                 .status(idea.getStatus())
                 .priority(idea.getPriority())
-                .submittedBy(userRepository.findById(idea.getSubmittedById()).map(this::toUserSummary).orElse(null))
-                .reviewedBy(userRepository.findById(idea.getReviewedById()).map(this::toUserSummary).orElse(null))
+                .submittedBy(submittedBy)
+                .reviewedBy(reviewedBy)
                 .reviewedAt(idea.getReviewedAt())
                 .createdAt(idea.getCreatedAt())
                 .updatedAt(idea.getUpdatedAt())
