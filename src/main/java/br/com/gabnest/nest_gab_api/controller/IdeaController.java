@@ -65,4 +65,24 @@ public class IdeaController {
         String reviewerId = jwtService.extractUserId(authHeader.substring(7));
         return ResponseEntity.ok(ideaService.review(id, request, reviewerId));
     }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('OPERATOR')")
+    public ResponseEntity<IdeaResponse> update(
+            @PathVariable String id,
+            @RequestBody @Valid IdeaRequest request,
+            @RequestHeader("Authorization") String authHeader) {
+        String userId = jwtService.extractUserId(authHeader.substring(7));
+        return ResponseEntity.ok(ideaService.update(id, request, userId));
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('OPERATOR')")
+    public ResponseEntity<Void> delete(
+            @PathVariable String id,
+            @RequestHeader("Authorization") String authHeader) {
+        String userId = jwtService.extractUserId(authHeader.substring(7));
+        ideaService.delete(id, userId);
+        return ResponseEntity.noContent().build();
+    }
 }

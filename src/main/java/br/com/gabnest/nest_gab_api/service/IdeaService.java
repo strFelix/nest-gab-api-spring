@@ -5,9 +5,11 @@ import br.com.gabnest.nest_gab_api.dto.idea.IdeaResponse;
 import br.com.gabnest.nest_gab_api.dto.idea.IdeaReviewRequest;
 import br.com.gabnest.nest_gab_api.dto.user.UserSummary;
 import br.com.gabnest.nest_gab_api.model.Idea;
+import br.com.gabnest.nest_gab_api.model.StrategicGuideline;
 import br.com.gabnest.nest_gab_api.model.User;
 import br.com.gabnest.nest_gab_api.model.enums.IdeaStatus;
 import br.com.gabnest.nest_gab_api.repository.IdeaRepository;
+import br.com.gabnest.nest_gab_api.repository.StrategicGuidelineRepository;
 import br.com.gabnest.nest_gab_api.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -23,15 +25,23 @@ public class IdeaService {
 
     private final IdeaRepository ideaRepository;
     private final UserRepository userRepository;
+    private final StrategicGuidelineRepository guidelineRepository;
 
     public IdeaResponse create(IdeaRequest request, String userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
+        // Validate guidelineId if provided
+        if (request.getGuidelineId() != null) {
+            guidelineRepository.findById(request.getGuidelineId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Guideline not found"));
+        }
+
         Idea idea = Idea.builder()
                 .title(request.getTitle())
                 .description(request.getDescription())
                 .status(IdeaStatus.PENDING)
+                .guidelineId(request.getGuidelineId())
                 .submittedById(user.getId())
                 .build();
 
@@ -77,6 +87,48 @@ public class IdeaService {
         return toResponse(ideaRepository.save(idea));
     }
 
+    public IdeaResponse update(String id, IdeaRequest request, String userId) {
+        Idea idea = findOrThrow(id);
+
+        // Only owner can edit
+        if (!idea.getSubmittedById().equals(userId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only idea owner can edit");
+        }
+
+        // Only pending ideas can be edited
+        if (!idea.getStatus().equals(IdeaStatus.PENDING)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Only pending ideas can be edited");
+        }
+
+        // Validate guidelineId if provided
+        if (request.getGuidelineId() != null) {
+            guidelineRepository.findById(request.getGuidelineId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Guideline not found"));
+        }
+
+        idea.setTitle(request.getTitle());
+        idea.setDescription(request.getDescription());
+        idea.setGuidelineId(request.getGuidelineId());
+
+        return toResponse(ideaRepository.save(idea));
+    }
+
+    public void delete(String id, String userId) {
+        Idea idea = findOrThrow(id);
+
+        // Only owner can delete
+        if (!idea.getSubmittedById().equals(userId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only idea owner can delete");
+        }
+
+        // Only pending ideas can be deleted
+        if (!idea.getStatus().equals(IdeaStatus.PENDING)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Only pending ideas can be deleted");
+        }
+
+        ideaRepository.deleteById(id);
+    }
+
     private Idea findOrThrow(String id) {
         return ideaRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Idea not found"));
@@ -117,6 +169,7 @@ public class IdeaService {
                 .submittedBy(submittedBy)
                 .reviewedBy(reviewedBy)
                 .reviewedAt(idea.getReviewedAt())
+                .guidelineId(idea.getGuidelineId())
                 .createdAt(idea.getCreatedAt())
                 .updatedAt(idea.getUpdatedAt())
                 .build();

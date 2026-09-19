@@ -50,4 +50,7 @@ public class ProjectRequest {
     private LocalDate endDate;
 
     private String ideaId;
+
+    // Optional: link to strategic guideline
+    private String guidelineId;
 }

@@ -18,6 +18,7 @@ public class IdeaResponse {
     private UserSummary submittedBy;
     private UserSummary reviewedBy;
     private LocalDateTime reviewedAt;
+    private String guidelineId;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

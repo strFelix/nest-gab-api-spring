@@ -14,4 +14,7 @@ public class GuidelineRequest {
     @NotBlank(message = "Content is required")
     @Size(min = 10, max = 4000, message = "Content must be between 10 and 4000 characters")
     private String content;
+
+    private String category;
+    private String campaign;
 }

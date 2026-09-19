@@ -14,4 +14,7 @@ public class IdeaRequest {
     @NotBlank(message = "Description is required")
     @Size(min = 10, max = 4000, message = "Description must be between 10 and 4000 characters")
     private String description;
+
+    // Optional: link to strategic guideline in effect
+    private String guidelineId;
 }

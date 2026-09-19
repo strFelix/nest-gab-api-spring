@@ -7,9 +7,11 @@ import br.com.gabnest.nest_gab_api.dto.project.ProjectSummary;
 import br.com.gabnest.nest_gab_api.dto.user.UserSummary;
 import br.com.gabnest.nest_gab_api.model.Idea;
 import br.com.gabnest.nest_gab_api.model.Project;
+import br.com.gabnest.nest_gab_api.model.StrategicGuideline;
 import br.com.gabnest.nest_gab_api.model.User;
 import br.com.gabnest.nest_gab_api.repository.IdeaRepository;
 import br.com.gabnest.nest_gab_api.repository.ProjectRepository;
+import br.com.gabnest.nest_gab_api.repository.StrategicGuidelineRepository;
 import br.com.gabnest.nest_gab_api.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -26,16 +28,29 @@ public class ProjectService {
     private final UserRepository userRepository;
     private final IdeaRepository ideaRepository;
     private final IdeaService ideaService;
+    private final StrategicGuidelineRepository guidelineRepository;
 
     public ProjectResponse create(ProjectRequest request, String userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
         String ideaId = request.getIdeaId();
+        String guidelineId = request.getGuidelineId();
+
+        // If idea is provided, ensure it exists and propagate its guideline
         if (ideaId != null) {
-            // ensure idea exists
-            ideaRepository.findById(ideaId)
+            Idea idea = ideaRepository.findById(ideaId)
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Idea not found"));
+            // Propagate guideline from idea if no explicit guidelineId provided
+            if (guidelineId == null) {
+                guidelineId = idea.getGuidelineId();
+            }
+        }
+
+        // Validate guidelineId if provided (either explicitly or from idea)
+        if (guidelineId != null) {
+            guidelineRepository.findById(guidelineId)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Guideline not found"));
         }
 
         Project project = Project.builder()
@@ -51,6 +66,7 @@ public class ProjectService {
                 .endDate(request.getEndDate())
                 .createdById(user.getId())
                 .ideaId(ideaId)
+                .guidelineId(guidelineId)
                 .build();
 
         return toResponse(projectRepository.save(project));
@@ -70,6 +86,12 @@ public class ProjectService {
     public ProjectResponse update(String id, ProjectRequest request) {
         Project project = findOrThrow(id);
 
+        // Validate guidelineId if provided
+        if (request.getGuidelineId() != null) {
+            guidelineRepository.findById(request.getGuidelineId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Guideline not found"));
+        }
+
         project.setTitle(request.getTitle());
         project.setDescription(request.getDescription());
         project.setStatus(request.getStatus());
@@ -80,6 +102,9 @@ public class ProjectService {
         project.setProductivityGain(request.getProductivityGain());
         project.setStartDate(request.getStartDate());
         project.setEndDate(request.getEndDate());
+        if (request.getGuidelineId() != null) {
+            project.setGuidelineId(request.getGuidelineId());
+        }
 
         return toResponse(projectRepository.save(project));
     }

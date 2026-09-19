@@ -190,7 +190,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"title\": \"Eficiência Energética 2025\",\n  \"content\": \"Priorizar iniciativas que reduzam o consumo energético da frota em pelo menos 15% até o final de 2025. Foco em rotas mais eficientes e adoção de veículos elétricos nas operações urbanas.\"\n}"
+              "raw": "{\n  \"title\": \"Eficiência Energética 2025\",\n  \"content\": \"Priorizar iniciativas que reduzam o consumo energético da frota em pelo menos 15% até o final de 2025. Foco em rotas mais eficientes e adoção de veículos elétricos nas operações urbanas.\",\n  \"category\": \"Sustentabilidade\",\n  \"campaign\": \"Q4 2025\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/guidelines",
@@ -209,7 +209,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"title\": \"Eficiência Energética 2025 - Atualizado\",\n  \"content\": \"Priorizar iniciativas que reduzam o consumo energético da frota em pelo menos 20% até o final de 2025.\"\n}"
+              "raw": "{\n  \"title\": \"Eficiência Energética 2025 - Atualizado\",\n  \"content\": \"Priorizar iniciativas que reduzam o consumo energético da frota em pelo menos 20% até o final de 2025.\",\n  \"category\": \"Sustentabilidade\",\n  \"campaign\": \"Q4 2025 - Updated\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/guidelines/1",
@@ -231,6 +231,20 @@
               "path": ["api", "guidelines", "1"]
             }
           }
+        },
+        {
+          "name": "GET Guideline History (LEADER)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token_leader}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/guidelines/1/history",
+              "host": ["{{base_url}}"],
+              "path": ["api", "guidelines", "1", "history"]
+            }
+          }
         }
       ]
     },
@@ -247,7 +261,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"title\": \"Sistema de rastreamento em tempo real\",\n  \"description\": \"Implementar rastreamento GPS em tempo real para todos os veículos da frota, permitindo monitoramento centralizado e redução de desvios de rota. Estimativa de redução de 20% no consumo de combustível.\"\n}"
+              "raw": "{\n  \"title\": \"Sistema de rastreamento em tempo real\",\n  \"description\": \"Implementar rastreamento GPS em tempo real para todos os veículos da frota, permitindo monitoramento centralizado e redução de desvios de rota. Estimativa de redução de 20% no consumo de combustível.\",\n  \"guidelineId\": null\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/ideas",
@@ -371,6 +385,39 @@
               "path": ["api", "ideas", "1", "review"]
             }
           }
+        },
+        {
+          "name": "PUT Edit Idea (OPERATOR - PENDING only)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token_operator}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Sistema de rastreamento em tempo real - Versão 2\",\n  \"description\": \"Implementar rastreamento GPS em tempo real com integração a plataforma de analytics. Permite monitoramento centralizado e redução de desvios de rota.\",\n  \"guidelineId\": null\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/ideas/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "ideas", "1"]
+            }
+          }
+        },
+        {
+          "name": "DELETE Cancel Idea (OPERATOR - PENDING only)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token_operator}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/ideas/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "ideas", "1"]
+            }
+          }
         }
       ]
     },
@@ -387,7 +434,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"title\": \"Rastreamento GPS Frota\",\n  \"description\": \"Implementação do sistema de rastreamento GPS em tempo real para toda a frota da divisão de Logística. Fase 1 contempla 50 veículos nas rotas urbanas de São Paulo.\",\n  \"status\": \"PLANNING\",\n  \"stage\": \"PLANNING\",\n  \"investment\": 180000.00,\n  \"expectedReturn\": 650000.00,\n  \"actualReturn\": null,\n  \"productivityGain\": null,\n  \"startDate\": \"2025-06-01\",\n  \"endDate\": \"2025-12-31\",\n  \"ideaId\": 1\n}"
+              "raw": "{\n  \"title\": \"Rastreamento GPS Frota\",\n  \"description\": \"Implementação do sistema de rastreamento GPS em tempo real para toda a frota da divisão de Logística. Fase 1 contempla 50 veículos nas rotas urbanas de São Paulo.\",\n  \"status\": \"PLANNING\",\n  \"stage\": \"PLANNING\",\n  \"investment\": 180000.00,\n  \"expectedReturn\": 650000.00,\n  \"actualReturn\": null,\n  \"productivityGain\": null,\n  \"startDate\": \"2025-06-01\",\n  \"endDate\": \"2025-12-31\",\n  \"ideaId\": 1,\n  \"guidelineId\": null\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/projects",
@@ -406,7 +453,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"title\": \"Treinamento Digital Operadores\",\n  \"description\": \"Programa de capacitação digital para os operadores da divisão de Passageiros, com foco em uso de sistemas mobile e coleta de dados operacionais.\",\n  \"status\": \"IN_PROGRESS\",\n  \"stage\": \"EXECUTION\",\n  \"investment\": 45000.00,\n  \"expectedReturn\": 120000.00,\n  \"actualReturn\": null,\n  \"productivityGain\": 12.50,\n  \"startDate\": \"2025-04-01\",\n  \"endDate\": \"2025-08-31\",\n  \"ideaId\": null\n}"
+              "raw": "{\n  \"title\": \"Treinamento Digital Operadores\",\n  \"description\": \"Programa de capacitação digital para os operadores da divisão de Passageiros, com foco em uso de sistemas mobile e coleta de dados operacionais.\",\n  \"status\": \"IN_PROGRESS\",\n  \"stage\": \"EXECUTION\",\n  \"investment\": 45000.00,\n  \"expectedReturn\": 120000.00,\n  \"actualReturn\": null,\n  \"productivityGain\": 12.50,\n  \"startDate\": \"2025-04-01\",\n  \"endDate\": \"2025-08-31\",\n  \"ideaId\": null,\n  \"guidelineId\": null\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/projects",
@@ -453,7 +500,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"title\": \"Rastreamento GPS Frota\",\n  \"description\": \"Implementação do sistema de rastreamento GPS em tempo real para toda a frota da divisão de Logística.\",\n  \"status\": \"IN_PROGRESS\",\n  \"stage\": \"EXECUTION\",\n  \"investment\": 180000.00,\n  \"expectedReturn\": 650000.00,\n  \"actualReturn\": 320000.00,\n  \"productivityGain\": 18.50,\n  \"startDate\": \"2025-06-01\",\n  \"endDate\": \"2025-12-31\",\n  \"ideaId\": 1\n}"
+              "raw": "{\n  \"title\": \"Rastreamento GPS Frota\",\n  \"description\": \"Implementação do sistema de rastreamento GPS em tempo real para toda a frota da divisão de Logística.\",\n  \"status\": \"IN_PROGRESS\",\n  \"stage\": \"EXECUTION\",\n  \"investment\": 180000.00,\n  \"expectedReturn\": 650000.00,\n  \"actualReturn\": 320000.00,\n  \"productivityGain\": 18.50,\n  \"startDate\": \"2025-06-01\",\n  \"endDate\": \"2025-12-31\",\n  \"ideaId\": 1,\n  \"guidelineId\": null\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/projects/1",
@@ -472,7 +519,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"title\": \"App Autoatendimento Passageiros\",\n  \"description\": \"Desenvolvimento e implantação do canal mobile de autoatendimento.\",\n  \"status\": \"COMPLETED\",\n  \"stage\": \"COMPLETED\",\n  \"investment\": 250000.00,\n  \"expectedReturn\": 900000.00,\n  \"actualReturn\": 870000.00,\n  \"productivityGain\": 32.00,\n  \"startDate\": \"2025-03-01\",\n  \"endDate\": \"2025-09-30\",\n  \"ideaId\": 3\n}"
+              "raw": "{\n  \"title\": \"App Autoatendimento Passageiros\",\n  \"description\": \"Desenvolvimento e implantação do canal mobile de autoatendimento.\",\n  \"status\": \"COMPLETED\",\n  \"stage\": \"COMPLETED\",\n  \"investment\": 250000.00,\n  \"expectedReturn\": 900000.00,\n  \"actualReturn\": 870000.00,\n  \"productivityGain\": 32.00,\n  \"startDate\": \"2025-03-01\",\n  \"endDate\": \"2025-09-30\",\n  \"ideaId\": 3,\n  \"guidelineId\": null\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/projects/1",
@@ -588,6 +635,53 @@
               "raw": "{{base_url}}/api/ideas",
               "host": ["{{base_url}}"],
               "path": ["api", "ideas"]
+            }
+          }
+        },
+        {
+          "name": "403 - Operator tentando editar ideia de outro",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token_operator}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Tentativa indevida\",\n  \"description\": \"Operador tentando editar ideia de outro operador\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/ideas/2",
+              "host": ["{{base_url}}"],
+              "path": ["api", "ideas", "2"]
+            }
+          }
+        },
+        {
+          "name": "403 - Operator tentando deletar ideia de outro",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token_operator}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/ideas/2",
+              "host": ["{{base_url}}"],
+              "path": ["api", "ideas", "2"]
+            }
+          }
+        },
+        {
+          "name": "403 - Manager tentando ver guideline history",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token_manager}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/guidelines/1/history",
+              "host": ["{{base_url}}"],
+              "path": ["api", "guidelines", "1", "history"]
             }
           }
         }

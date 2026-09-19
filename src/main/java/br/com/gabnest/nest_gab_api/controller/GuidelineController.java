@@ -2,6 +2,7 @@ package br.com.gabnest.nest_gab_api.controller;
 
 import br.com.gabnest.nest_gab_api.dto.guideline.GuidelineRequest;
 import br.com.gabnest.nest_gab_api.dto.guideline.GuidelineResponse;
+import br.com.gabnest.nest_gab_api.dto.guideline.GuidelineHistoryResponse;
 import br.com.gabnest.nest_gab_api.service.GuidelineService;
 import br.com.gabnest.nest_gab_api.service.JwtService;
 import jakarta.validation.Valid;
@@ -48,6 +49,12 @@ public class GuidelineController {
             @PathVariable String id,
             @RequestBody @Valid GuidelineRequest request) {
         return ResponseEntity.ok(guidelineService.update(id, request));
+    }
+
+    @GetMapping("/{id}/history")
+    @PreAuthorize("hasRole('LEADER')")
+    public ResponseEntity<List<GuidelineHistoryResponse>> findHistory(@PathVariable String id) {
+        return ResponseEntity.ok(guidelineService.findHistory(id));
     }
 
     @DeleteMapping("/{id}")

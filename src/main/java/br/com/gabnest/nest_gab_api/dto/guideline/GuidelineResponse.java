@@ -12,6 +12,8 @@ public class GuidelineResponse {
     private String id;
     private String title;
     private String content;
+    private String category;
+    private String campaign;
     private Boolean active;
     private UserSummary createdBy;
     private LocalDateTime createdAt;
