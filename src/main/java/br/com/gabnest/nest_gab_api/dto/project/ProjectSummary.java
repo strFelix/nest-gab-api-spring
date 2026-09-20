@@ -21,4 +21,6 @@ public class ProjectSummary {
     private BigDecimal productivityGain;
     private LocalDate startDate;
     private LocalDate endDate;
+    private String ideaId;
+    private String guidelineId;
 }

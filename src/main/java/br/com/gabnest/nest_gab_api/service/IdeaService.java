@@ -33,8 +33,7 @@ public class IdeaService {
 
         // Validate guidelineId if provided
         if (request.getGuidelineId() != null) {
-            guidelineRepository.findById(request.getGuidelineId())
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Guideline not found"));
+            findActiveGuideline(request.getGuidelineId());
         }
 
         Idea idea = Idea.builder()
@@ -79,12 +78,35 @@ public class IdeaService {
         User reviewer = userRepository.findById(reviewerId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
+            validateStatusTransition(idea.getStatus(), request.getStatus());
+
+            if ((request.getStatus() == IdeaStatus.PRIORITIZED || request.getStatus() == IdeaStatus.APPROVED)
+                && request.getPriority() == null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Priority is required for this status");
+            }
+
         idea.setStatus(request.getStatus());
         idea.setPriority(request.getPriority());
         idea.setReviewedById(reviewer.getId());
         idea.setReviewedAt(LocalDateTime.now());
 
         return toResponse(ideaRepository.save(idea));
+    }
+
+    private void validateStatusTransition(IdeaStatus currentStatus, IdeaStatus requestedStatus) {
+        if (currentStatus == requestedStatus) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Idea already has this status");
+        }
+
+        boolean allowed = switch (currentStatus) {
+            case PENDING -> requestedStatus == IdeaStatus.PRIORITIZED || requestedStatus == IdeaStatus.REJECTED;
+            case PRIORITIZED -> requestedStatus == IdeaStatus.APPROVED || requestedStatus == IdeaStatus.REJECTED;
+            case APPROVED, REJECTED -> false;
+        };
+
+        if (!allowed) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Invalid idea status transition");
+        }
     }
 
     public IdeaResponse update(String id, IdeaRequest request, String userId) {
@@ -102,8 +124,7 @@ public class IdeaService {
 
         // Validate guidelineId if provided
         if (request.getGuidelineId() != null) {
-            guidelineRepository.findById(request.getGuidelineId())
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Guideline not found"));
+            findActiveGuideline(request.getGuidelineId());
         }
 
         idea.setTitle(request.getTitle());
@@ -127,6 +148,17 @@ public class IdeaService {
         }
 
         ideaRepository.deleteById(id);
+    }
+
+    private StrategicGuideline findActiveGuideline(String guidelineId) {
+        StrategicGuideline guideline = guidelineRepository.findById(guidelineId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Guideline not found"));
+
+        if (!Boolean.TRUE.equals(guideline.getActive())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Guideline is inactive");
+        }
+
+        return guideline;
     }
 
     private Idea findOrThrow(String id) {

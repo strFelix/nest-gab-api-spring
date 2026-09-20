@@ -37,6 +37,12 @@ public class ProjectController {
         return ResponseEntity.ok(projectService.findAll());
     }
 
+    @GetMapping("/overview")
+    @PreAuthorize("hasAnyRole('OPERATOR', 'MANAGER', 'LEADER')")
+    public ResponseEntity<List<ProjectSummary>> overview() {
+        return ResponseEntity.ok(projectService.findAll());
+    }
+
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('MANAGER', 'LEADER')")
     public ResponseEntity<ProjectResponse> findById(@PathVariable String id) {

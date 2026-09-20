@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/dashboard")
 @RequiredArgsConstructor
@@ -19,5 +21,17 @@ public class DashboardController {
     @PreAuthorize("hasRole('LEADER')")
     public ResponseEntity<DashboardService.DashboardResponse> getDashboard() {
         return ResponseEntity.ok(dashboardService.getDashboard());
+    }
+
+    @GetMapping("/by-guideline")
+    @PreAuthorize("hasRole('LEADER')")
+    public ResponseEntity<List<DashboardService.DashboardGroupResponse>> getByGuideline() {
+        return ResponseEntity.ok(dashboardService.getByGuideline());
+    }
+
+    @GetMapping("/by-project")
+    @PreAuthorize("hasRole('LEADER')")
+    public ResponseEntity<List<DashboardService.DashboardGroupResponse>> getByProject() {
+        return ResponseEntity.ok(dashboardService.getByProject());
     }
 }

@@ -50,6 +50,12 @@ public class IdeaController {
         return ResponseEntity.ok(ideaService.findMyIdeas(userId));
     }
 
+    @GetMapping("/overview")
+    @PreAuthorize("hasAnyRole('OPERATOR', 'MANAGER', 'LEADER')")
+    public ResponseEntity<List<IdeaResponse>> overview() {
+        return ResponseEntity.ok(ideaService.findAll());
+    }
+
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('OPERATOR', 'MANAGER')")
     public ResponseEntity<IdeaResponse> findById(@PathVariable String id) {

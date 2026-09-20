@@ -3,6 +3,7 @@ package br.com.gabnest.nest_gab_api.service;
 import br.com.gabnest.nest_gab_api.dto.auth.AuthRequest;
 import br.com.gabnest.nest_gab_api.dto.auth.AuthResponse;
 import br.com.gabnest.nest_gab_api.dto.auth.RegisterRequest;
+import br.com.gabnest.nest_gab_api.dto.user.CreateUserRequest;
 import br.com.gabnest.nest_gab_api.model.User;
 import br.com.gabnest.nest_gab_api.model.enums.UserRole;
 import br.com.gabnest.nest_gab_api.repository.UserRepository;
@@ -49,6 +50,21 @@ public class AuthService {
         userRepository.save(user);
 
         return buildAuthResponse(user);
+    }
+
+    public AuthResponse createByLeader(CreateUserRequest request) {
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already in use");
+        }
+
+        User user = User.builder()
+                .name(request.getName())
+                .email(request.getEmail())
+                .password(passwordEncoder.encode("nest123"))
+                .role(request.getRole())
+                .build();
+
+        return buildAuthResponse(userRepository.save(user));
     }
 
     private AuthResponse buildAuthResponse(User user) {

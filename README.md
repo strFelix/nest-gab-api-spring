@@ -279,8 +279,11 @@ Authorization: Bearer eyJhbGciOiJIUzUxMiJ9...
 | `POST /api/guidelines` | ❌ | ❌ | ✅ |
 | `PUT /api/guidelines/{id}` | ❌ | ❌ | ✅ |
 | `DELETE /api/guidelines/{id}` | ❌ | ❌ | ✅ |
+| `GET /api/guidelines/{id}/history` | ❌ | ❌ | ✅ |
 | `POST /api/ideas` | ✅ | ❌ | ❌ |
 | `GET /api/ideas/my` | ✅ | ❌ | ❌ |
+| `PUT /api/ideas/{id}` | ✅ | ❌ | ❌ |
+| `DELETE /api/ideas/{id}` | ✅ | ❌ | ❌ |
 | `GET /api/ideas` | ❌ | ✅ | ❌ |
 | `PATCH /api/ideas/{id}/review` | ❌ | ✅ | ❌ |
 | `POST /api/projects` | ❌ | ✅ | ❌ |
@@ -296,6 +299,7 @@ GET    /api/guidelines/{id}     # Get guideline by id
 POST   /api/guidelines          # Create guideline (LEADER)
 PUT    /api/guidelines/{id}     # Update guideline (LEADER)
 DELETE /api/guidelines/{id}     # Soft delete guideline (LEADER)
+GET    /api/guidelines/{id}/history # Append-only history (LEADER)
 ```
 
 ### Ideas
@@ -305,7 +309,10 @@ POST   /api/ideas               # Submit idea (OPERATOR)
 GET    /api/ideas               # List all ideas (MANAGER)
 GET    /api/ideas?status=       # Filter by status (MANAGER)
 GET    /api/ideas/my            # List my ideas (OPERATOR)
+GET    /api/ideas/overview      # Read-only overview (all authenticated roles)
 GET    /api/ideas/{id}          # Get idea by id
+PUT    /api/ideas/{id}          # Update own pending idea (OPERATOR)
+DELETE /api/ideas/{id}          # Delete own pending idea (OPERATOR)
 PATCH  /api/ideas/{id}/review   # Review idea (MANAGER)
 ```
 
@@ -320,6 +327,7 @@ PENDING  ──►  PRIORITIZED  ──►  APPROVED
 ```
 POST   /api/projects            # Create project (MANAGER)
 GET    /api/projects            # List all projects (MANAGER, LEADER)
+GET    /api/projects/overview   # Read-only project overview (all authenticated roles)
 GET    /api/projects/{id}       # Get project by id (MANAGER, LEADER)
 PUT    /api/projects/{id}       # Update project (MANAGER)
 ```
@@ -332,9 +340,13 @@ PUT    /api/projects/{id}       # Update project (MANAGER)
 
 ```
 GET    /api/dashboard           # ROI summary and metrics (LEADER)
+GET    /api/dashboard/by-guideline # Aggregated metrics by guideline (LEADER)
+GET    /api/dashboard/by-project   # Aggregated metrics by project (LEADER)
 ```
 
-**Response includes:** Total ROI (%), total savings, completed projects count, ideas implemented count, and project summaries.
+**Dashboard response includes:** Total ROI (%), total savings, completed projects count, ideas implemented count, and project summaries. Project summaries include `ideaId` and `guidelineId`.
+
+**Grouped response fields:** `id`, `projectCount`, `totalInvestment`, `totalExpectedReturn`, `totalActualReturn` and `totalProductivityGain`.
 
 ---
 

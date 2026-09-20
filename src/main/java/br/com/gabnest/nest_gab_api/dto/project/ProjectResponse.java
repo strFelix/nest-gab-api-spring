@@ -25,6 +25,8 @@ public class ProjectResponse {
     private BigDecimal productivityGain;
     private LocalDate startDate;
     private LocalDate endDate;
+    private String ideaId;
+    private String guidelineId;
     private UserSummary createdBy;
     private IdeaResponse idea;
     private LocalDateTime createdAt;

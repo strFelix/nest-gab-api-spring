@@ -1,6 +1,5 @@
 package br.com.gabnest.nest_gab_api.service;
 
-import br.com.gabnest.nest_gab_api.dto.idea.IdeaResponse;
 import br.com.gabnest.nest_gab_api.dto.project.ProjectRequest;
 import br.com.gabnest.nest_gab_api.dto.project.ProjectResponse;
 import br.com.gabnest.nest_gab_api.dto.project.ProjectSummary;
@@ -41,16 +40,22 @@ public class ProjectService {
         if (ideaId != null) {
             Idea idea = ideaRepository.findById(ideaId)
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Idea not found"));
+
+            if (!idea.getStatus().equals(br.com.gabnest.nest_gab_api.model.enums.IdeaStatus.APPROVED)) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "Only approved ideas can become projects");
+            }
+
             // Propagate guideline from idea if no explicit guidelineId provided
             if (guidelineId == null) {
                 guidelineId = idea.getGuidelineId();
+            } else if (idea.getGuidelineId() != null && !guidelineId.equals(idea.getGuidelineId())) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "Project guideline must match idea guideline");
             }
         }
 
         // Validate guidelineId if provided (either explicitly or from idea)
         if (guidelineId != null) {
-            guidelineRepository.findById(guidelineId)
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Guideline not found"));
+            findActiveGuideline(guidelineId);
         }
 
         Project project = Project.builder()
@@ -88,8 +93,7 @@ public class ProjectService {
 
         // Validate guidelineId if provided
         if (request.getGuidelineId() != null) {
-            guidelineRepository.findById(request.getGuidelineId())
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Guideline not found"));
+            findActiveGuideline(request.getGuidelineId());
         }
 
         project.setTitle(request.getTitle());
@@ -135,6 +139,8 @@ public class ProjectService {
                 .productivityGain(p.getProductivityGain())
                 .startDate(p.getStartDate())
                 .endDate(p.getEndDate())
+                .ideaId(p.getIdeaId())
+                .guidelineId(p.getGuidelineId())
                 .build();
     }
 
@@ -151,10 +157,23 @@ public class ProjectService {
                 .productivityGain(p.getProductivityGain())
                 .startDate(p.getStartDate())
                 .endDate(p.getEndDate())
+                .ideaId(p.getIdeaId())
+                .guidelineId(p.getGuidelineId())
                 .createdBy(userRepository.findById(p.getCreatedById()).map(this::toUserSummary).orElse(null))
                 .idea(p.getIdeaId() != null ? ideaService.findById(p.getIdeaId()) : null)
                 .createdAt(p.getCreatedAt())
                 .updatedAt(p.getUpdatedAt())
                 .build();
+    }
+
+    private StrategicGuideline findActiveGuideline(String guidelineId) {
+        StrategicGuideline guideline = guidelineRepository.findById(guidelineId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Guideline not found"));
+
+        if (!Boolean.TRUE.equals(guideline.getActive())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Guideline is inactive");
+        }
+
+        return guideline;
     }
 }

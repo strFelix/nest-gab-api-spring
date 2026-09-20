@@ -61,6 +61,34 @@ public class DashboardService {
                 .build();
     }
 
+    public List<DashboardGroupResponse> getByGuideline() {
+        return aggregateBy("guidelineId");
+    }
+
+    public List<DashboardGroupResponse> getByProject() {
+        return aggregateBy("_id");
+    }
+
+    private List<DashboardGroupResponse> aggregateBy(String field) {
+        Aggregation aggregation = Aggregation.newAggregation(
+                Aggregation.group(field)
+                        .count().as("projectCount")
+                        .sum("investment").as("totalInvestment")
+                        .sum("expectedReturn").as("totalExpectedReturn")
+                        .sum("actualReturn").as("totalActualReturn")
+                        .sum("productivityGain").as("totalProductivityGain"),
+                Aggregation.sort(Sort.Direction.DESC, "totalActualReturn")
+        );
+
+        AggregationResults<DashboardGroupResponse> results = mongoTemplate.aggregate(
+                aggregation,
+                Project.class,
+                DashboardGroupResponse.class
+        );
+
+        return results.getMappedResults();
+    }
+
     private DashboardMetrics loadCompletedProjectMetrics() {
         Aggregation aggregation = Aggregation.newAggregation(
                 Aggregation.match(Criteria.where("status").is(ProjectStatus.COMPLETED.name())),
@@ -88,6 +116,8 @@ public class DashboardService {
                 .productivityGain(project.getProductivityGain())
                 .startDate(project.getStartDate())
                 .endDate(project.getEndDate())
+                .ideaId(project.getIdeaId())
+                .guidelineId(project.getGuidelineId())
                 .build();
     }
 
@@ -118,5 +148,15 @@ public class DashboardService {
         private Long completedProjects;
         private Long ideasImplemented;
         private List<ProjectSummary> projects;
+    }
+
+    @Data
+    public static class DashboardGroupResponse {
+        private String id;
+        private Long projectCount;
+        private BigDecimal totalInvestment;
+        private BigDecimal totalExpectedReturn;
+        private BigDecimal totalActualReturn;
+        private BigDecimal totalProductivityGain;
     }
 }
